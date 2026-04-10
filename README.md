@@ -58,4 +58,4 @@ Os dados são armazenados no Back4App, garantindo persistência em nuvem.
 
 ## 🧑‍🦰 INTEGRANTE
 
- - Vinicius Rocha Maciel
+ - Vinicius Rocha Maciel.
