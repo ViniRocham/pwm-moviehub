@@ -6,30 +6,43 @@ function MovieCard({ movie, onSelect, refreshFavorites }) {
 
   useEffect(() => {
     checkIfFavorite();
-  }, []);
+  }, [movie]);
 
   const checkIfFavorite = async () => {
-    const favorites = await getFavorites();
+    try {
+      const favorites = await getFavorites();
 
-    const exists = favorites.some(
-      (fav) => fav.movieId === movie.id
-    );
+      // 🔥 NORMALIZAÇÃO DO ID (resolve Home + Favorites)
+      const movieId = movie.id || movie.movieId;
 
-    setIsFavorite(exists);
+      const exists = favorites.some(
+        (fav) => fav.movieId === movieId
+      );
+
+      setIsFavorite(exists);
+    } catch (error) {
+      console.error("Erro ao verificar favoritos:", error);
+    }
   };
 
   const handleFavorite = async (e) => {
     e.stopPropagation();
 
-    if (isFavorite) {
-      await removeFavorite(movie.id);
-      setIsFavorite(false);
-    } else {
-      await addFavorite(movie);
-      setIsFavorite(true);
-    }
+    try {
+      const movieId = movie.id || movie.movieId;
 
-    if (refreshFavorites) refreshFavorites();
+      if (isFavorite) {
+        await removeFavorite(movieId);
+        setIsFavorite(false);
+      } else {
+        await addFavorite(movie);
+        setIsFavorite(true);
+      }
+
+      if (refreshFavorites) refreshFavorites();
+    } catch (error) {
+      console.error("Erro ao atualizar favorito:", error);
+    }
   };
 
   return (
@@ -51,13 +64,16 @@ function MovieCard({ movie, onSelect, refreshFavorites }) {
               }`
             : "https://via.placeholder.com/300x450"
         }
+        alt={movie.title}
         style={styles.image}
       />
 
       <div style={styles.overlay}>
-        <h3>{movie.title}</h3>
+        <h3 style={styles.title}>{movie.title}</h3>
 
-        <p>Nota: {movie.vote_average || movie.rating}</p>
+        <p style={styles.rating}>
+          Nota: {movie.vote_average || movie.rating}
+        </p>
 
         <button onClick={handleFavorite} style={styles.button}>
           {isFavorite ? "Remover" : "Favoritar"}
@@ -70,10 +86,11 @@ function MovieCard({ movie, onSelect, refreshFavorites }) {
 const styles = {
   card: {
     position: "relative",
-    borderRadius: "10px",
+    borderRadius: "12px",
     overflow: "hidden",
     transition: "0.3s",
-    cursor: "pointer"
+    cursor: "pointer",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.5)"
   },
   image: {
     width: "100%",
@@ -84,17 +101,30 @@ const styles = {
     position: "absolute",
     bottom: 0,
     width: "100%",
-    background: "linear-gradient(transparent, black)",
-    padding: "10px",
+    background: "linear-gradient(transparent, rgba(0,0,0,0.9))",
+    padding: "12px",
     color: "#fff"
   },
+  title: {
+    fontSize: "14px",
+    fontWeight: "bold",
+    marginBottom: "5px"
+  },
+  rating: {
+    fontSize: "12px",
+    color: "#ccc"
+  },
   button: {
-    marginTop: "8px",
-    padding: "6px",
+    marginTop: "10px",
+    padding: "8px",
+    width: "100%",
     background: "#e50914",
     border: "none",
     color: "#fff",
-    borderRadius: "5px"
+    borderRadius: "6px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    transition: "0.2s"
   }
 };
 
